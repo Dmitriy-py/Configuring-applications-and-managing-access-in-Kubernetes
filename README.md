@@ -24,7 +24,7 @@
 
 ### 1. Манифесты
 
-**deployment.yaml**
+### ` deployment.yaml `
 
 ```yaml
 apiVersion: apps/v1
@@ -68,7 +68,7 @@ spec:
             path: index.html
 ```
 
-**configmap-web.yaml**
+### ` configmap-web.yaml `
 
 ```yaml
 
