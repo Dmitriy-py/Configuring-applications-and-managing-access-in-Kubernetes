@@ -202,6 +202,77 @@ openssl x509 -req -in developer.csr -CA {CA серт вашего кластер
    3. Скриншот проверки прав (kubectl get pods --as=developer)
 
 
+## ## Ответ:
+
+### 1. Команды генерации сертификатов (Согласно заданию)
+Эти команды были предоставлены в задании для создания учетных данных пользователя, но в Minikube мы используем ServiceAccount для внутренней аутентификации.
+
+```bash
+# 1. Генерация приватного ключа
+openssl genrsa -out developer.key 2048
+
+# 2. Создание CSR (Запрос на подпись)
+openssl req -new -key developer.key -out developer.csr -subj "/CN=developer-user"
+
+# 3. Подпись (Этот шаг требует доступа к CA кластера, который в Minikube закрыт)
+# openssl x509 -req -in developer.csr -CA {CA серт вашего кластера} -CAkey {CA ключ вашего кластера} -CAcreateserial -out developer.crt -days 365
+```
+
+### 2. Манифесты RBAC
+
+### Поскольку тестирую права для ServiceAccount (developer-sa), который я создали ранее, создал Role и RoleBinding.
+
+### ` role-pod-reader.yaml `
+
+```yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: default
+  name: pod-viewer-logs
+rules:
+- apiGroups: [""] # Core API Group
+  resources: ["pods"]
+  verbs: ["get", "list", "describe"]
+- apiGroups: [""]
+  resources: ["pods/log"] # Право на чтение логов
+  verbs: ["get"]
+```
+
+### ` rolebinding-developer.yaml `
+
+```yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: developer-binding
+  namespace: default
+subjects:
+- kind: ServiceAccount
+  name: developer-sa # Имя SA, который мы использовали для тестирования
+  namespace: default
+roleRef:
+  kind: Role
+  name: pod-viewer-logs
+  apiGroup: rbac.authorization.k8s.io
+```
+### ` kubectl apply -f rbac-pod-access.yaml `
+
+### 3. Проверка доступа
+
+Проверка проводилась путем эмуляции пользователя через флаг --as=system:serviceaccount:default:developer-sa.
+
+<img width="1920" height="1080" alt="Снимок экрана (2859)" src="https://github.com/user-attachments/assets/7b3f40dc-4c2a-4378-b71f-fb2b6e21f0ec" />
+
+
+
+
+
+
+
+
+
+
 
 
 
