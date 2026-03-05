@@ -126,10 +126,55 @@ openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
       * ingress-tls.yaml
    2. Скриншот вывода curl -k
 
+## Ответ:
 
+## Результаты выполнения Задания 2: Настройка HTTPS с Secrets и Ingress
 
+### 1. Манифесты
 
+### ` vsecret-tls.yaml `
 
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: myapp-tls-secret
+  namespace: default
+type: kubernetes.io/tls
+data:
+  tls.crt: <CERTIFICATE_BASE64>
+  tls.key: <KEY_BASE64>
+```
+
+### ` ingress-tls.yaml `
+
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: web-app-ingress
+  namespace: default
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "false" 
+spec:
+  tls:
+  - hosts:
+    - myapp.example.com 
+    secretName: myapp-tls-secret
+  rules:
+  - host: myapp.example.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: web-app-service # Сервис из Задания 1
+            port:
+              number: 80
+```
+
+<img width="1920" height="1080" alt="Снимок экрана (2857)" src="https://github.com/user-attachments/assets/ad5f8f22-9299-4ba3-93e3-7666ef89143e" />
 
 
 
